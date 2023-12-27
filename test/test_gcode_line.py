@@ -69,3 +69,11 @@ def test_flag_parameter_2_to_gcode():
         comment='',
     )
     assert line.gcode_str == 'G28 X Y1'
+
+def test_variant_command_to_gcode():
+  line = GcodeLine(
+      command=('G', 123, 4),
+      params={'X': 10},
+      comment='this is a comment',
+  )
+  assert line.gcode_str == 'G123.4 X10 ; this is a comment'

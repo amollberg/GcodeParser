@@ -130,3 +130,11 @@ def test_multi_line():
     assert get_lines('G91G1 X-10 Y20;inline comment\nG1 Z0.5\nT1M350 T100') == lines
     assert get_lines(' \tG91\n\tG1\t  X-10 Y20 \t ;\t inline comment\nG1 Z0.5\nT1\nM350 T100') == lines
     assert get_lines('G91\nG1 X-10 Y20 ; inline comment\n; comment to be excluded\nG1 Z0.5\nT1\nM350 T100', include_comments=False) == lines
+
+def test_command_variant():
+    line = GcodeLine(
+        command=('G', 123, 4),
+        params={'X': 10},
+        comment='this is a comment',
+    )
+    assert get_lines('G123.4 X10 ; this is a comment')[0] == line

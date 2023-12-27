@@ -6,7 +6,7 @@ from .commands import Commands
 
 @dataclass
 class GcodeLine:
-    command: Tuple[str, int]
+    command: Tuple[str, int, int]
     params: Dict[str, float]
     comment: str
 
@@ -22,7 +22,10 @@ class GcodeLine:
 
     @property
     def command_str(self):
-        return f"{self.command[0]}{self.command[1] if self.command[1] is not None else ''}"
+        letter = self.command[0]
+        number = self.command[1] if self.command[1] is not None else ''
+        minor = f".{self.command[2]}" if len(self.command) > 2 and self.command[2] is not None else ''
+        return f"{letter}{number}{minor}"
 
     def get_param(self, param: str, return_type=None, default=None):
         """
@@ -76,14 +79,17 @@ class GcodeParser:
 
 
 def get_lines(gcode, include_comments=False):
-    regex = r'(?!; *.+)(G|M|T|g|m|t)(\d+)(([ \t]*(?!G|M|g|m)\w(".*"|([-+\d\.]*)))*)[ \t]*(;[ \t]*(.*))?|;[ \t]*(.+)'
+    regex = r'(?!; *.+)(G|M|T|g|m|t)(\d+)(?:\.(\d+))?(([ \t]*(?!G|M|g|m)\w(".*"|([-+\d\.]*)))*)[ \t]*(;[ \t]*(.*))?|;[ \t]*(.+)'
     regex_lines = re.findall(regex, gcode)
     lines = []
     for line in regex_lines:
         if line[0]:
-            command = (line[0].upper(), int(line[1]))
+            if line[2]:
+              command = (line[0].upper(), int(line[1]), int(line[2]))
+            else:
+              command = (line[0].upper(), int(line[1]))
             comment = line[-2]
-            params = split_params(line[2])
+            params = split_params(line[3])
 
         elif include_comments:
             command = (';', None)
